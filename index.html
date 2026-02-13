@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruby Silver 練習問題</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Ruby Silver 練習問題</h1>
+            <p class="subtitle">Ruby技術者認定試験 Silver対策</p>
+            <a href="gold/index.html" class="nav-link">Gold 問題集へ</a>
+        </header>
+
+        <!-- スタート画面 -->
+        <div id="start-screen" class="screen">
+            <div class="card">
+                <h2>問題セットを選択</h2>
+                <p>Ruby Silverの試験対策問題に挑戦できます。<br>各セット10問です。</p>
+                <div class="set-buttons">
+                    <button class="set-btn" data-set="set1">
+                        <span class="set-number">1</span>
+                        <span class="set-name">基礎・文法</span>
+                        <span class="set-count">10問</span>
+                    </button>
+                    <button class="set-btn" data-set="set2">
+                        <span class="set-number">2</span>
+                        <span class="set-name">文字列・配列・ハッシュ</span>
+                        <span class="set-count">10問</span>
+                    </button>
+                    <button class="set-btn" data-set="set3">
+                        <span class="set-number">3</span>
+                        <span class="set-name">オブジェクト指向・クラス</span>
+                        <span class="set-count">10問</span>
+                    </button>
+                    <button class="set-btn" data-set="set4">
+                        <span class="set-number">4</span>
+                        <span class="set-name">例外処理・ブロック</span>
+                        <span class="set-count">10問</span>
+                    </button>
+                    <button class="set-btn" data-set="set5">
+                        <span class="set-number">5</span>
+                        <span class="set-name">ファイル操作・その他</span>
+                        <span class="set-count">10問</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- クイズ画面 -->
+        <div id="quiz-screen" class="screen hidden">
+            <div class="progress-bar">
+                <div id="progress" class="progress"></div>
+            </div>
+            <div class="quiz-info">
+                <span id="question-number">問題 1 / 10</span>
+                <span id="score">正解: 0</span>
+            </div>
+            <div class="card">
+                <div id="question-area">
+                    <h3 id="question-text"></h3>
+                    <pre id="code-block" class="code-block hidden"></pre>
+                </div>
+                <div id="choices" class="choices"></div>
+                <div id="feedback" class="feedback hidden">
+                    <p id="feedback-text"></p>
+                    <div id="explanation" class="explanation"></div>
+                </div>
+                <button id="next-btn" class="btn btn-secondary hidden">次の問題へ</button>
+            </div>
+        </div>
+
+        <!-- 結果画面 -->
+        <div id="result-screen" class="screen hidden">
+            <div class="card result-card">
+                <h2>結果発表</h2>
+                <div class="score-circle">
+                    <span id="final-score">0</span>
+                    <span class="score-total">/ 10</span>
+                </div>
+                <p id="result-message"></p>
+                <div class="result-details">
+                    <p>正答率: <span id="percentage">0</span>%</p>
+                </div>
+                <div class="btn-group">
+                    <button id="retry-btn" class="btn btn-primary">もう一度挑戦</button>
+                    <button id="home-btn" class="btn btn-secondary">ホームに戻る</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="questions.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
