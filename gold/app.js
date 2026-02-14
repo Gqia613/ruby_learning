@@ -5,6 +5,7 @@ class QuizApp {
         this.currentIndex = 0;
         this.score = 0;
         this.answered = false;
+        this.selectedIndexes = [];
         this.currentSet = null;
 
         // DOM要素
@@ -18,6 +19,7 @@ class QuizApp {
         this.questionText = document.getElementById('question-text');
         this.codeBlock = document.getElementById('code-block');
         this.choicesContainer = document.getElementById('choices');
+        this.answerBtn = document.getElementById('answer-btn');
         this.feedback = document.getElementById('feedback');
         this.feedbackText = document.getElementById('feedback-text');
         this.explanation = document.getElementById('explanation');
@@ -32,14 +34,13 @@ class QuizApp {
     }
 
     initEventListeners() {
-        // セットボタンのイベントリスナー
         this.setButtons.forEach(btn => {
             btn.addEventListener('click', () => {
-                const setName = btn.dataset.set;
-                this.startQuiz(setName);
+                this.startQuiz(btn.dataset.set);
             });
         });
 
+        this.answerBtn.addEventListener('click', () => this.submitAnswer());
         this.nextBtn.addEventListener('click', () => this.nextQuestion());
         this.retryBtn.addEventListener('click', () => this.retryQuiz());
         this.homeBtn.addEventListener('click', () => this.goHome());
@@ -47,19 +48,14 @@ class QuizApp {
 
     startQuiz(setName) {
         this.currentSet = setName;
-        this.questions = this.getQuestions(setName);
+        this.questions = this.shuffle([...questions[setName]]);
         this.currentIndex = 0;
         this.score = 0;
         this.answered = false;
+        this.selectedIndexes = [];
 
         this.showScreen('quiz');
         this.showQuestion();
-    }
-
-    getQuestions(setName) {
-        // 指定されたセットの問題をシャッフルして返す
-        const setQuestions = [...questions[setName]];
-        return this.shuffle(setQuestions);
     }
 
     shuffle(array) {
@@ -77,24 +73,23 @@ class QuizApp {
         this.resultScreen.classList.add('hidden');
 
         switch (screen) {
-            case 'start':
-                this.startScreen.classList.remove('hidden');
-                break;
-            case 'quiz':
-                this.quizScreen.classList.remove('hidden');
-                break;
-            case 'result':
-                this.resultScreen.classList.remove('hidden');
-                break;
+            case 'start': this.startScreen.classList.remove('hidden'); break;
+            case 'quiz': this.quizScreen.classList.remove('hidden'); break;
+            case 'result': this.resultScreen.classList.remove('hidden'); break;
         }
+    }
+
+    isMulti(question) {
+        return Array.isArray(question.correct);
     }
 
     showQuestion() {
         const question = this.questions[this.currentIndex];
         this.answered = false;
+        this.selectedIndexes = [];
 
         // プログレスバー更新
-        const progressPercent = ((this.currentIndex) / this.questions.length) * 100;
+        const progressPercent = (this.currentIndex / this.questions.length) * 100;
         this.progress.style.width = `${progressPercent}%`;
 
         // 問題情報更新
@@ -117,34 +112,73 @@ class QuizApp {
         question.choices.forEach((choice, index) => {
             const button = document.createElement('button');
             button.className = 'choice-btn';
-            button.textContent = choice;
-            button.addEventListener('click', () => this.selectAnswer(index));
+            button.innerHTML = choice;
+            button.addEventListener('click', () => this.toggleChoice(index));
             this.choicesContainer.appendChild(button);
         });
 
-        // フィードバックと次へボタンを隠す
+        // ボタン制御
+        this.answerBtn.classList.add('hidden');
         this.feedback.classList.add('hidden');
         this.nextBtn.classList.add('hidden');
     }
 
-    selectAnswer(selectedIndex) {
+    toggleChoice(index) {
         if (this.answered) return;
+
+        const question = this.questions[this.currentIndex];
+        const buttons = this.choicesContainer.querySelectorAll('.choice-btn');
+
+        if (this.isMulti(question)) {
+            // 複数選択：トグル
+            const pos = this.selectedIndexes.indexOf(index);
+            if (pos === -1) {
+                this.selectedIndexes.push(index);
+                buttons[index].classList.add('selected');
+            } else {
+                this.selectedIndexes.splice(pos, 1);
+                buttons[index].classList.remove('selected');
+            }
+        } else {
+            // 単一選択：切り替え
+            this.selectedIndexes = [index];
+            buttons.forEach((btn, i) => {
+                btn.classList.toggle('selected', i === index);
+            });
+        }
+
+        // 1つ以上選択されたら回答ボタン表示
+        if (this.selectedIndexes.length > 0) {
+            this.answerBtn.classList.remove('hidden');
+        } else {
+            this.answerBtn.classList.add('hidden');
+        }
+    }
+
+    submitAnswer() {
+        if (this.answered || this.selectedIndexes.length === 0) return;
         this.answered = true;
 
         const question = this.questions[this.currentIndex];
-        const isCorrect = selectedIndex === question.correct;
+        const correctIndexes = this.isMulti(question) ? question.correct : [question.correct];
+        const selected = [...this.selectedIndexes].sort();
+        const correct = [...correctIndexes].sort();
+        const isCorrect = selected.length === correct.length &&
+            selected.every((v, i) => v === correct[i]);
 
-        // すべての選択肢を無効化
+        // すべての選択肢を無効化＆正解/不正解表示
         const buttons = this.choicesContainer.querySelectorAll('.choice-btn');
         buttons.forEach((btn, index) => {
             btn.classList.add('disabled');
-            if (index === question.correct) {
+            btn.classList.remove('selected');
+
+            if (correctIndexes.includes(index)) {
                 btn.classList.add('show-correct');
             }
-            if (index === selectedIndex && !isCorrect) {
+            if (this.selectedIndexes.includes(index) && !correctIndexes.includes(index)) {
                 btn.classList.add('incorrect');
             }
-            if (index === selectedIndex && isCorrect) {
+            if (this.selectedIndexes.includes(index) && correctIndexes.includes(index)) {
                 btn.classList.add('correct');
             }
         });
@@ -161,16 +195,15 @@ class QuizApp {
         this.feedbackText.textContent = isCorrect ? '正解！' : '不正解...';
         this.explanation.innerHTML = question.explanation;
 
-        // 次へボタン表示
+        // ボタン制御
+        this.answerBtn.classList.add('hidden');
         this.nextBtn.classList.remove('hidden');
         this.nextBtn.textContent = this.currentIndex < this.questions.length - 1
-            ? '次の問題へ'
-            : '結果を見る';
+            ? '次の問題へ' : '結果を見る';
     }
 
     nextQuestion() {
         this.currentIndex++;
-
         if (this.currentIndex >= this.questions.length) {
             this.showResult();
         } else {
@@ -180,34 +213,22 @@ class QuizApp {
 
     showResult() {
         this.showScreen('result');
-
-        // プログレスバーを100%に
         this.progress.style.width = '100%';
 
-        // スコア表示
         this.finalScore.textContent = this.score;
         const percentValue = Math.round((this.score / this.questions.length) * 100);
         this.percentage.textContent = percentValue;
 
-        // メッセージ
         let message;
-        if (percentValue >= 90) {
-            message = '素晴らしい！Ruby Silverの合格は間違いなし！';
-        } else if (percentValue >= 70) {
-            message = 'いい調子！もう少しで合格ラインです！';
-        } else if (percentValue >= 50) {
-            message = '頑張りましょう！復習を続けてください。';
-        } else {
-            message = '基礎からしっかり復習しましょう！';
-        }
+        if (percentValue >= 90) message = '素晴らしい！合格は間違いなし！';
+        else if (percentValue >= 70) message = 'いい調子！もう少しで合格ラインです！';
+        else if (percentValue >= 50) message = '頑張りましょう！復習を続けてください。';
+        else message = '基礎からしっかり復習しましょう！';
         this.resultMessage.textContent = message;
     }
 
     retryQuiz() {
-        // 同じセットでもう一度
-        if (this.currentSet) {
-            this.startQuiz(this.currentSet);
-        }
+        if (this.currentSet) this.startQuiz(this.currentSet);
     }
 
     goHome() {
@@ -215,7 +236,6 @@ class QuizApp {
     }
 }
 
-// アプリ初期化
 document.addEventListener('DOMContentLoaded', () => {
     new QuizApp();
 });

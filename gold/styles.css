@@ -252,7 +252,42 @@ header h1 {
     cursor: pointer;
     transition: all 0.2s;
     font-size: 1rem;
+    line-height: 1.6;
+}
+
+.choice-btn code {
+    background: rgba(0, 0, 0, 0.07);
+    padding: 2px 6px;
+    border-radius: 4px;
     font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+    font-size: 0.95em;
+}
+
+.choice-btn.selected code,
+.choice-btn.correct code,
+.choice-btn.incorrect code,
+.choice-btn.show-correct code {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.choice-btn pre.choice-code {
+    margin: 4px 0 0;
+    padding: 8px 12px;
+    background: #2d2d2d;
+    color: #f8f8f2;
+    border-radius: 6px;
+    font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+    font-size: 0.9em;
+    line-height: 1.5;
+    white-space: pre;
+    overflow-x: auto;
+}
+
+.choice-btn.selected pre.choice-code,
+.choice-btn.correct pre.choice-code,
+.choice-btn.incorrect pre.choice-code,
+.choice-btn.show-correct pre.choice-code {
+    background: rgba(0, 0, 0, 0.3);
 }
 
 .choice-btn:hover:not(.disabled) {
@@ -334,8 +369,23 @@ header h1 {
     font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
 }
 
+/* 複数選択ヒント */
+.multi-hint {
+    text-align: center;
+    color: #b8860b;
+    font-weight: bold;
+    margin-top: 12px;
+    font-size: 0.95rem;
+}
+
+/* 回答・次へボタン */
+#answer-btn {
+    margin-top: 16px;
+    width: 100%;
+}
+
 #next-btn {
-    margin-top: 20px;
+    margin-top: 12px;
     width: 100%;
 }
 
